@@ -7,7 +7,7 @@ pokemon_list=(bulbasaur ivysaur venusaur charmander charmeleon)
 output_dir="pokemon_data"
 mkdir -p "$output_dir"
 
-# Function to fetch Pokémon data
+# Function to fetch data for a single Pokémon
 fetch_pokemon() {
 	  name=$1
 	    echo "Fetching data for $name..."
@@ -19,22 +19,13 @@ fetch_pokemon() {
 					    fi
 				    }
 
-				    # Array to track background process IDs
-				    pids=()
-
-				    # Start fetches in background
+				    # Loop through Pokémon and fetch in parallel
 				    for name in "${pokemon_list[@]}"; do
 					      fetch_pokemon "$name" &
-					        pids+=($!)  # Store process ID
-					done
+				      done
 
-					# Wait for all background processes
-					for pid in "${pids[@]}"; do
-						  wait "$pid" || {
-							      echo "Process $pid failed, killing..."
-						      kill "$pid" 2>/dev/null
-						        }
-						done
+				      # Wait for all background jobs to finish
+				      wait
 
-						echo "✅ All Pokémon data fetched."
+				      echo "✅ All Pokémon data fetched."
 
