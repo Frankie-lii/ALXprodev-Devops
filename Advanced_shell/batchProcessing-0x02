@@ -5,25 +5,35 @@ pokemon_list=(bulbasaur ivysaur venusaur charmander charmeleon)
 
 # Output directory
 output_dir="pokemon_data"
-
-# Create directory if it doesn't exist
 mkdir -p "$output_dir"
 
-# Loop through each Pokémon
+# Loop through Pokémon
 for name in "${pokemon_list[@]}"; do
-  echo "Fetching data for $name..."
+	  echo "Fetching data for $name..."
 
-  # Fetch data and save to file
-  curl -s -f "https://pokeapi.co/api/v2/pokemon/$name" -o "${output_dir}/${name}.json"
+	    attempts=0
+	      success=false
 
-  # Check if the request succeeded
-  if [ $? -eq 0 ]; then
-    echo "Saved data to ${output_dir}/${name}.json ✅"
-  else
-    echo "Failed to fetch data for $name ❌" >> errors.txt
-  fi
+	        # Retry logic: maximum 3 attempts
+		  while [ $attempts -lt 3 ]; do
+			      curl -s -f "https://pokeapi.co/api/v2/pokemon/$name" -o "${output_dir}/${name}.json"
+			          
+			          if [ $? -eq 0 ]; then
+					        echo "Saved data to ${output_dir}/${name}.json ✅"
+						      success=true
+						            break
+							        else
+									      ((attempts++))
+									            echo "Attempt $attempts failed for $name. Retrying..."
+										          sleep 1
+											      fi
+											        done
 
-  # Delay to prevent rate limiting
-  sleep 1
-done
+												  # Log error if all 3 attempts fail
+												    if [ "$success" = false ]; then
+													        echo "Failed to fetch data for $name after 3 attempts ❌" >> errors.txt
+														  fi
+
+														    sleep 1
+													    done
 
