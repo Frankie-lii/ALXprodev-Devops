@@ -7,55 +7,34 @@ pokemon_list=(bulbasaur ivysaur venusaur charmander charmeleon)
 output_dir="pokemon_data"
 mkdir -p "$output_dir"
 
-# Function to fetch data for a single Pokémon
+# Function to fetch Pokémon data
 fetch_pokemon() {
-  name=$1
-  echo "Fetching data for $name..."
-  curl -s -f "https://pokeapi.co/api/v2/pokemon/$name" -o "${output_dir}/${name}.json"
-  if [ $? -eq 0 ]; then
-    echo "Saved data to ${output_dir}/${name}.json ✅"
-  else
-    echo "Failed to fetch data for $name ❌" >> errors.txt
-  fi
-}
+	  name=$1
+	    echo "Fetching data for $name..."
+	      curl -s -f "https://pokeapi.co/api/v2/pokemon/$name" -o "${output_dir}/${name}.json"
+	        if [ $? -eq 0 ]; then
+			    echo "Saved data to ${output_dir}/${name}.json ✅"
+			      else
+				          echo "Failed to fetch data for $name ❌" >> errors.txt
+					    fi
+				    }
 
-# Loop through Pokémon and fetch in parallel
-for name in "${pokemon_list[@]}"; do
-  fetch_pokemon "$name" &
-done
+				    # Array to track background process IDs
+				    pids=()
 
-# Wait for all background jobs to finish
-wait
+				    # Start fetches in background
+				    for name in "${pokemon_list[@]}"; do
+					      fetch_pokemon "$name" &
+					        pids+=($!)  # Store process ID
+					done
 
-echo "✅ All Pokémon data fetched."
-#!/bin/bash
+					# Wait for all background processes
+					for pid in "${pids[@]}"; do
+						  wait "$pid" || {
+							      echo "Process $pid failed, killing..."
+						      kill "$pid" 2>/dev/null
+						        }
+						done
 
-# List of Pokémon
-pokemon_list=(bulbasaur ivysaur venusaur charmander charmeleon)
-
-# Output directory
-output_dir="pokemon_data"
-mkdir -p "$output_dir"
-
-# Function to fetch data for a single Pokémon
-fetch_pokemon() {
-  name=$1
-  echo "Fetching data for $name..."
-  curl -s -f "https://pokeapi.co/api/v2/pokemon/$name" -o "${output_dir}/${name}.json"
-  if [ $? -eq 0 ]; then
-    echo "Saved data to ${output_dir}/${name}.json ✅"
-  else
-    echo "Failed to fetch data for $name ❌" >> errors.txt
-  fi
-}
-
-# Loop through Pokémon and fetch in parallel
-for name in "${pokemon_list[@]}"; do
-  fetch_pokemon "$name" &
-done
-
-# Wait for all background jobs to finish
-wait
-
-echo "✅ All Pokémon data fetched."
+						echo "✅ All Pokémon data fetched."
 
